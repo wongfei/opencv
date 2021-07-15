@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <opencv2/core/utils/configuration.private.hpp>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4503)
@@ -687,9 +688,11 @@ bool CvCapture_MSMF::initStream(DWORD streamID, const MediaType& mt)
 _ComPtr<IMFAttributes> CvCapture_MSMF::getDefaultSourceConfig(UINT32 num)
 {
     CV_Assert(num > 0);
+    // https://github.com/opencv/opencv/pull/20327/files
+    const bool OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS = cv::utils::getConfigurationParameterBool("OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS", false);
     _ComPtr<IMFAttributes> res;
     if (FAILED(MFCreateAttributes(&res, num)) ||
-        FAILED(res->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true)) ||
+        FAILED(res->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS)) ||
         FAILED(res->SetUINT32(MF_SOURCE_READER_DISABLE_DXVA, false)) ||
         FAILED(res->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, false)) ||
         FAILED(res->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, true))
